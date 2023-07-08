@@ -1,5 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
 
 public enum SnakeHeadDirection
@@ -16,6 +19,7 @@ public class Snake : MonoBehaviour
     public int length;
     public GameObject sectionPrefab;
     LinkedList<GameObject> sections = new LinkedList<GameObject>();
+    public Fruits fruitScript;
 
     //sprites
     public Sprite head;
@@ -34,12 +38,13 @@ public class Snake : MonoBehaviour
         {
             sections.AddLast(Instantiate(sectionPrefab, startingPosition + (Vector3.left * i), Quaternion.identity));
         }
+        UpdateSprites();
     }
 
     // Update is called once per frame
     void Update()
     {
-        UpdateSprites();
+        TrackFruit();
     }
 
     //add new position
@@ -109,11 +114,54 @@ public class Snake : MonoBehaviour
 
     void TrackFruit()
     {
-        //get access to list of fruits
-        //store first fruit as closest fruit
-        //if closer fruit is found, replace closest fruit
         //once closest fruit is found, move in a direction towards it
         //start all over, checking if there is a closer fruit
+
+        //find closest fruit
+        GameObject closestFruit = null;// = fruitScript.spawnedFruits[0];
+        for (int i = 0; i < fruitScript.spawnedFruits.Count; i++)
+        {
+            if (closestFruit == null)
+            {
+                closestFruit = fruitScript.spawnedFruits[i];
+            }
+            else if(Vector3.Distance(sections.First.Value.transform.position, fruitScript.spawnedFruits[i].transform.position) < Vector3.Distance(sections.First.Value.transform.position, closestFruit.transform.position))
+            {
+                closestFruit = fruitScript.spawnedFruits[i];
+            }
+        }
+        if(closestFruit != null)
+        {
+            //move towards closest fruit
+            float yDistance = closestFruit.transform.position.y - sections.First.Value.transform.position.y;
+            float xDistance = closestFruit.transform.position.x - sections.First.Value.transform.position.x;
+            //if fruit is mostly up
+            if (yDistance > 0 && yDistance > Mathf.Abs(xDistance))
+            {
+                MoveSnake(SnakeHeadDirection.Up);
+            }
+            //if fruit is mostly down
+            else if (yDistance < 0 && Mathf.Abs(yDistance) > Mathf.Abs(xDistance))
+            {
+                MoveSnake(SnakeHeadDirection.Down);
+            }
+            //if fruit is mostly left
+            else if (xDistance < 0 && Mathf.Abs(xDistance) > Mathf.Abs(yDistance))
+            {
+                MoveSnake(SnakeHeadDirection.Left);
+            }
+            //if fruit is mostly right
+            else if (xDistance > 0 && xDistance > Mathf.Abs(xDistance))
+            {
+                MoveSnake(SnakeHeadDirection.Right);
+            }
+            else if (xDistance == 0 && yDistance == 0)
+            {
+                //snake head is on fruit
+                fruitScript.spawnedFruits.Remove(closestFruit);
+                AddSection();
+            }
+        }
     }
 
     void UpdateSprites()
