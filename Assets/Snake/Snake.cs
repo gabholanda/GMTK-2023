@@ -109,7 +109,11 @@ public class Snake : MonoBehaviour
 
     void TrackFruit()
     {
-
+        //get access to list of fruits
+        //store first fruit as closest fruit
+        //if closer fruit is found, replace closest fruit
+        //once closest fruit is found, move in a direction towards it
+        //start all over, checking if there is a closer fruit
     }
 
     void UpdateSprites()
@@ -176,34 +180,89 @@ public class Snake : MonoBehaviour
                 if (node.Previous.Value.transform.position == node.Value.transform.position + Vector3.up)
                 {
                     //next node is right of current node
-                    node.Value.GetComponent<SpriteRenderer>().sprite = turn;
                     if (node.Next.Value.transform.position == node.Value.transform.position + Vector3.right)
                     {
-                        node.Value.transform.Rotate(new Vector3(0, 0, 0));
+                        node.Value.GetComponent<SpriteRenderer>().sprite = turn;
+                        node.Value.transform.rotation = Quaternion.Euler(0, 0, 0);
                     }
                     //next node is left of current node
+                    if (node.Next.Value.transform.position == node.Value.transform.position + Vector3.left)
+                    {
+                        node.Value.GetComponent<SpriteRenderer>().sprite = turn;
+                        node.Value.transform.rotation = Quaternion.Euler(0, 0, 270);
+                    }
                     //next node is below current node
+                    if (node.Next.Value.transform.position == node.Value.transform.position + Vector3.down)
+                    {
+                        node.Value.GetComponent<SpriteRenderer>().sprite = straight;
+                        node.Value.transform.rotation = Quaternion.Euler(0, 0, 0);
+                    }
                 }
                 //previous node is below current node
-                if (node.Previous.Value.transform.position == node.Value.transform.position + Vector3.down)
+                else if (node.Previous.Value.transform.position == node.Value.transform.position + Vector3.down)
                 {
                     //next node is right of current node
+                    if (node.Next.Value.transform.position == node.Value.transform.position + Vector3.right)
+                    {
+                        node.Value.GetComponent<SpriteRenderer>().sprite = turn;
+                        node.Value.transform.rotation = Quaternion.Euler(0, 0, 90);
+                    }
                     //next node is left of current node
+                    if (node.Next.Value.transform.position == node.Value.transform.position + Vector3.left)
+                    {
+                        node.Value.GetComponent<SpriteRenderer>().sprite = turn;
+                        node.Value.transform.rotation = Quaternion.Euler(0, 0, 180);
+                    }
                     //next node is above current node
+                    if (node.Next.Value.transform.position == node.Value.transform.position + Vector3.up)
+                    {
+                        node.Value.GetComponent<SpriteRenderer>().sprite = straight;
+                        node.Value.transform.rotation = Quaternion.Euler(0, 0, 0);
+                    }
                 }
                 //previous node is right of current node
-                if (node.Previous.Value.transform.position == node.Value.transform.position + Vector3.right)
+                else if (node.Previous.Value.transform.position == node.Value.transform.position + Vector3.right)
                 {
                     //next node is above current node
+                    if (node.Next.Value.transform.position == node.Value.transform.position + Vector3.up)
+                    {
+                        node.Value.GetComponent<SpriteRenderer>().sprite = turn;
+                        node.Value.transform.rotation = Quaternion.Euler(0, 0, 0);
+                    }
                     //next node is left of current node
+                    if (node.Next.Value.transform.position == node.Value.transform.position + Vector3.left)
+                    {
+                        node.Value.GetComponent<SpriteRenderer>().sprite = straight;
+                        node.Value.transform.rotation = Quaternion.Euler(0, 0, 90);
+                    }
                     //next node is below current node
+                    if (node.Next.Value.transform.position == node.Value.transform.position + Vector3.down)
+                    {
+                        node.Value.GetComponent<SpriteRenderer>().sprite = turn;
+                        node.Value.transform.rotation = Quaternion.Euler(0, 0, 90);
+                    }
                 }
                 //previous node is left of current node
-                if (node.Previous.Value.transform.position == node.Value.transform.position + Vector3.left)
+                else if (node.Previous.Value.transform.position == node.Value.transform.position + Vector3.left)
                 {
                     //next node is right of current node
+                    if (node.Next.Value.transform.position == node.Value.transform.position + Vector3.right)
+                    {
+                        node.Value.GetComponent<SpriteRenderer>().sprite = straight;
+                        node.Value.transform.rotation = Quaternion.Euler(0, 0, 90);
+                    }
                     //next node is above current node
+                    if (node.Next.Value.transform.position == node.Value.transform.position + Vector3.up)
+                    {
+                        node.Value.GetComponent<SpriteRenderer>().sprite = turn;
+                        node.Value.transform.rotation = Quaternion.Euler(0, 0, 270);
+                    }
                     //next node is below current node
+                    if (node.Next.Value.transform.position == node.Value.transform.position + Vector3.down)
+                    {
+                        node.Value.GetComponent<SpriteRenderer>().sprite = turn;
+                        node.Value.transform.rotation = Quaternion.Euler(0, 0, 180);
+                    }
                 }
             }
 
