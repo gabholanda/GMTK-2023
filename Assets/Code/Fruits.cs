@@ -12,6 +12,7 @@ public class Fruits : MonoBehaviour
     public Vector2 finalPosition;
     [SerializeField]
     private List<Vector2> emptyCells = new List<Vector2>();
+    public List<GameObject> spawnedFruits = new List<GameObject>();
 
     private void Awake()
     {
@@ -54,7 +55,9 @@ public class Fruits : MonoBehaviour
         Vector3Int cellPosition = grid.LocalToCell(randomCell);
         Vector3 spawnPosition = grid.GetCellCenterLocal(cellPosition);
         GameObject fruit = Instantiate(fruitPrefab, spawnPosition, Quaternion.identity);
+
         fruit.transform.SetParent(grid.transform);
+        spawnedFruits.Add(fruit);
     }
 
     private void OnDrawGizmos()
