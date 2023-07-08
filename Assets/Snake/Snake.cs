@@ -6,16 +6,22 @@ using UnityEngine;
 public class Snake : MonoBehaviour
 {
     public Vector3 startingPosition;
-    public int startingLength;
+    public int length;
     public GameObject sectionPrefab;
-    LinkedList<GameObject> sections;
+    LinkedList<GameObject> sections = new LinkedList<GameObject>();
+
+    //sprites
+    public Sprite head;
+    public Sprite tail;
+    public Sprite straight;
+    public Sprite turn;
 
 
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         //setting up initial sections
-        for (int i = 0; i < startingLength; i++)
+        for (int i = 0; i < length; i++)
         {
             sections.AddLast(Instantiate(sectionPrefab, startingPosition + (Vector3.left * i), Quaternion.identity));
         }
@@ -24,7 +30,7 @@ public class Snake : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        UpdateSprites();
     }
 
     //add new position
@@ -32,6 +38,9 @@ public class Snake : MonoBehaviour
     {
         //fix position
         sections.AddLast(Instantiate(sectionPrefab, new Vector3(0,0,0), Quaternion.identity));
+
+        //update length variable (for game over check)
+        length++;
     }
 
     void MoveSnake(string direction)
@@ -60,17 +69,111 @@ public class Snake : MonoBehaviour
                 sections.First.Value.transform.position += Vector3.right;
                 break;
         }
+
+        UpdateSprites();
     }
 
     void TrackFruit()
     {
-        //replace with reference to a list of all fruits on screen
         
-        //
     }
 
-    void AddSection()
+    void UpdateSprites()
     {
+        LinkedListNode<GameObject> node = sections.Last;
+        while (node != null)
+        {
+            //if node is head
+            if(node == sections.First)
+            {
+                node.Value.GetComponent<SpriteRenderer>().sprite = head;
+                //if piece after is above
+                if (node.Next.Value.transform.position == node.Value.transform.position + Vector3.up)
+                {
+                    node.Value.transform.rotation = Quaternion.Euler(0, 0, 180);
+                }
+                //if piece after is below
+                if (node.Next.Value.transform.position == node.Value.transform.position + Vector3.down)
+                {
+                    node.Value.transform.rotation = Quaternion.Euler(0, 0, 0);
+                }
+                //if piece after is to right
+                if (node.Next.Value.transform.position == node.Value.transform.position + Vector3.right)
+                {
+                    node.Value.transform.rotation = Quaternion.Euler(0, 0, 90);
+                }
+                //if piece after is to left
+                if (node.Next.Value.transform.position == node.Value.transform.position + Vector3.left)
+                {
+                    node.Value.transform.rotation = Quaternion.Euler(0, 0, 270);
+                }
+            }
 
+            //if node is tail
+            else if (node == sections.Last)
+            {
+                node.Value.GetComponent<SpriteRenderer>().sprite = tail;
+                //if piece before is above
+                if (node.Previous.Value.transform.position == node.Value.transform.position + Vector3.up)
+                {
+                    node.Value.transform.rotation = Quaternion.Euler(0, 0, 0);
+                }
+                //if piece before is below
+                if (node.Previous.Value.transform.position == node.Value.transform.position + Vector3.down)
+                {
+                    node.Value.transform.rotation = Quaternion.Euler(0, 0, 180);
+                }
+                //if piece before is to right
+                if (node.Previous.Value.transform.position == node.Value.transform.position + Vector3.right)
+                {
+                    node.Value.transform.rotation = Quaternion.Euler(0, 0, 270);
+                }
+                //if piece before is to left
+                if (node.Previous.Value.transform.position == node.Value.transform.position + Vector3.left)
+                {
+                    node.Value.transform.rotation = Quaternion.Euler(0, 0, 90);
+                }
+            }
+
+            //section is middle piece
+            else
+            {
+                //previous node is above current node
+                if (node.Previous.Value.transform.position == node.Value.transform.position + Vector3.up)
+                {
+                    //next node is right of current node
+                    node.Value.GetComponent<SpriteRenderer>().sprite = turn;
+                    if (node.Next.Value.transform.position == node.Value.transform.position + Vector3.right)
+                    {
+                        node.Value.transform.Rotate(new Vector3(0, 0, 0));
+                    }
+                    //next node is left of current node
+                    //next node is below current node
+                }
+                //previous node is below current node
+                if (node.Previous.Value.transform.position == node.Value.transform.position + Vector3.down)
+                {
+                    //next node is right of current node
+                    //next node is left of current node
+                    //next node is above current node
+                }
+                //previous node is right of current node
+                if (node.Previous.Value.transform.position == node.Value.transform.position + Vector3.right)
+                {
+                    //next node is above current node
+                    //next node is left of current node
+                    //next node is below current node
+                }
+                //previous node is left of current node
+                if (node.Previous.Value.transform.position == node.Value.transform.position + Vector3.left)
+                {
+                    //next node is right of current node
+                    //next node is above current node
+                    //next node is below current node
+                }
+            }
+            
+            node = node.Previous;
+        }
     }
 }
