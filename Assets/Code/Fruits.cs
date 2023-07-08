@@ -5,17 +5,18 @@ using UnityEngine;
 
 public class Fruits : MonoBehaviour
 {
-    public GridLayout grid;
+    public Grid grid;
     public float spawnLength;
     public GameObject fruitPrefab;
-    public int gridWidth = 16;
-    public int gridHeight = 7;
-    private List<Vector2Int> emptyCells = new List<Vector2Int>();
+    public Vector2 startingPosition;
+    public Vector2 finalPosition;
+    [SerializeField]
+    private List<Vector2> emptyCells = new List<Vector2>();
 
-    private void Start()
+    private void Awake()
     {
-        StartCoroutine(SpawnFruitsCoroutine());
         InitializeEmptyCells();
+        StartCoroutine(SpawnFruitsCoroutine());
     }
 
     private IEnumerator SpawnFruitsCoroutine()
@@ -29,22 +30,14 @@ public class Fruits : MonoBehaviour
 
     private void InitializeEmptyCells()
     {
-        for (int x = 0; x < gridWidth; x++)
+        for (int x = (int)startingPosition.x; x < (int)finalPosition.x; x++)
         {
-            for (int y = 0; y < gridHeight; y++)
+            for (int y = (int)startingPosition.y; y < (int)finalPosition.y; y++)
             {
-                emptyCells.Add(new Vector2Int(x, y));
+                Vector3Int cellPosition = grid.LocalToCell(new Vector2(x, y));
+                emptyCells.Add(grid.GetCellCenterLocal(cellPosition));
             }
         }
-    }
-
-    private Vector3 GetCellPosition(Vector2Int cell)
-    {
-        Vector3 cellSize = grid.cellSize;
-        Vector3 gridCenter = grid.transform.position;
-        Vector3 gridOffset = new Vector3(cellSize.x * gridWidth * 0.5f, cellSize.y * gridHeight * 0.5f, 0f);
-        Vector3 origin = gridCenter - gridOffset;
-        return origin + new Vector3(cell.x * cellSize.x - 0.5f, cell.y * cellSize.y, 0f);
     }
 
     private void SpawnFruit(GameObject fruitPrefab)
@@ -56,11 +49,20 @@ public class Fruits : MonoBehaviour
         }
 
         int randomIndex = Random.Range(0, emptyCells.Count);
-        Vector2Int randomCell = emptyCells[randomIndex];
+        Vector3 randomCell = emptyCells[randomIndex];
         emptyCells.RemoveAt(randomIndex);
-
-        Vector3 spawnPosition = GetCellPosition(randomCell);
+        Vector3Int cellPosition = grid.LocalToCell(randomCell);
+        Vector3 spawnPosition = grid.GetCellCenterLocal(cellPosition);
         GameObject fruit = Instantiate(fruitPrefab, spawnPosition, Quaternion.identity);
         fruit.transform.SetParent(grid.transform);
+    }
+
+    private void OnDrawGizmos()
+    {
+        // This only appears in the Scene tab - It is purely for debugging
+        for (int i = 0; i < emptyCells.Count; i++)
+        {
+            Gizmos.DrawCube(emptyCells[i], new Vector3(1, 1));
+        }
     }
 }
