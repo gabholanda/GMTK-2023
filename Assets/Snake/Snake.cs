@@ -1,7 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+
+public enum SnakeHeadDirection
+{
+    Up,
+    Down,
+    Left,
+    Right
+}
 
 public class Snake : MonoBehaviour
 {
@@ -16,6 +23,8 @@ public class Snake : MonoBehaviour
     public Sprite straight;
     public Sprite turn;
 
+    [SerializeField]
+    private SnakeHeadDirection cachedDirection;
 
     // Start is called before the first frame update
     void Awake()
@@ -34,16 +43,37 @@ public class Snake : MonoBehaviour
     }
 
     //add new position
-    void AddSection(float x, float y)
+    void AddSection()
     {
-        //fix position
-        sections.AddLast(Instantiate(sectionPrefab, new Vector3(0,0,0), Quaternion.identity));
 
+        // TODO: Test this
+        Vector3 newSectionPosition = sections.Last.Value.transform.position;
+        if (cachedDirection == SnakeHeadDirection.Up)
+        {
+            newSectionPosition.y += 1;
+        }
+        else if (cachedDirection == SnakeHeadDirection.Down)
+        {
+            newSectionPosition.y -= 1;
+        }
+        else if (cachedDirection == SnakeHeadDirection.Left)
+        {
+            newSectionPosition.x -= 1;
+        }
+        else
+        {
+            newSectionPosition.x += 1;
+        }
+        // We are adding to the head here, so I am pushing it one tile ahead and updating sprites, so player wont see anything funny happening
+        sections.AddBefore(sections.Last, Instantiate(sectionPrefab, newSectionPosition, Quaternion.identity));
+
+        // Update sprites is doing all the work of setting the right sprite and its necessary rotation, thanks Sabrina.
+        UpdateSprites();
         //update length variable (for game over check)
         length++;
     }
 
-    void MoveSnake(string direction)
+    void MoveSnake(SnakeHeadDirection direction)
     {
         //moving all other elements
         LinkedListNode<GameObject> node = sections.Last;
@@ -53,19 +83,23 @@ public class Snake : MonoBehaviour
             node = node.Previous;
         }
 
-        //moving head
+        //moving head and caching the last direction it went towards to
         switch (direction)
         {
-            case "up":
+            case SnakeHeadDirection.Up:
+                cachedDirection = SnakeHeadDirection.Up;
                 sections.First.Value.transform.position += Vector3.up;
                 break;
-            case "down":
+            case SnakeHeadDirection.Down:
+                cachedDirection = SnakeHeadDirection.Down;
                 sections.First.Value.transform.position += Vector3.down;
                 break;
-            case "left":
+            case SnakeHeadDirection.Left:
+                cachedDirection = SnakeHeadDirection.Left;
                 sections.First.Value.transform.position += Vector3.left;
                 break;
-            case "right":
+            case SnakeHeadDirection.Right:
+                cachedDirection = SnakeHeadDirection.Right;
                 sections.First.Value.transform.position += Vector3.right;
                 break;
         }
@@ -75,7 +109,7 @@ public class Snake : MonoBehaviour
 
     void TrackFruit()
     {
-        
+
     }
 
     void UpdateSprites()
@@ -84,7 +118,7 @@ public class Snake : MonoBehaviour
         while (node != null)
         {
             //if node is head
-            if(node == sections.First)
+            if (node == sections.First)
             {
                 node.Value.GetComponent<SpriteRenderer>().sprite = head;
                 //if piece after is above
@@ -172,7 +206,7 @@ public class Snake : MonoBehaviour
                     //next node is below current node
                 }
             }
-            
+
             node = node.Previous;
         }
     }
