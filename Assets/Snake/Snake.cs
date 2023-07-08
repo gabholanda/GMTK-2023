@@ -4,6 +4,7 @@ using System.Linq;
 using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
 public enum SnakeHeadDirection
 {
@@ -44,6 +45,8 @@ public class Snake : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
+        Debug.Log(fruitScript.spawnedFruits.Count);
         TrackFruit();
     }
 
@@ -124,44 +127,54 @@ public class Snake : MonoBehaviour
             if (closestFruit == null)
             {
                 closestFruit = fruitScript.spawnedFruits[i];
+                //Debug.Log("closest fruit at: " + closestFruit.transform.position);
             }
             else if(Vector3.Distance(sections.First.Value.transform.position, fruitScript.spawnedFruits[i].transform.position) < Vector3.Distance(sections.First.Value.transform.position, closestFruit.transform.position))
             {
                 closestFruit = fruitScript.spawnedFruits[i];
+                //Debug.Log("closest fruit at: " + closestFruit.transform.position);
             }
         }
+
         if(closestFruit != null)
         {
             //move towards closest fruit
             float yDistance = closestFruit.transform.position.y - sections.First.Value.transform.position.y;
             float xDistance = closestFruit.transform.position.x - sections.First.Value.transform.position.x;
-            //if fruit is mostly up
-            if (yDistance > 0 && yDistance > Mathf.Abs(xDistance))
+
+            //if head is on fruit
+            if (xDistance == 0 && yDistance == 0)
             {
-                MoveSnake(SnakeHeadDirection.Up);
-            }
-            //if fruit is mostly down
-            else if (yDistance < 0 && Mathf.Abs(yDistance) > Mathf.Abs(xDistance))
-            {
-                MoveSnake(SnakeHeadDirection.Down);
-            }
-            //if fruit is mostly left
-            else if (xDistance < 0 && Mathf.Abs(xDistance) > Mathf.Abs(yDistance))
-            {
-                MoveSnake(SnakeHeadDirection.Left);
-            }
-            //if fruit is mostly right
-            else if (xDistance > 0 && xDistance > Mathf.Abs(xDistance))
-            {
-                MoveSnake(SnakeHeadDirection.Right);
-            }
-            else if (xDistance == 0 && yDistance == 0)
-            {
-                //snake head is on fruit
                 fruitScript.spawnedFruits.Remove(closestFruit);
-                AddSection();
+                Destroy(closestFruit);
+            }
+            //if closer in x direction
+            else if(Mathf.Abs(yDistance) > Mathf.Abs(xDistance))
+            {
+                if (yDistance < 0)
+                {
+                    MoveSnake(SnakeHeadDirection.Down);
+                }
+                else if (yDistance > 0)
+                {
+                    MoveSnake(SnakeHeadDirection.Up);
+                }
+            }
+            //if closer in y direction or equal in each direction
+            else if(Mathf.Abs(yDistance) <= Mathf.Abs(xDistance))
+            {
+                if (xDistance < 0)
+                {
+                    MoveSnake(SnakeHeadDirection.Left);
+                }
+                else if (xDistance > 0)
+                {
+                    MoveSnake(SnakeHeadDirection.Right);
+                }
             }
         }
+
+        closestFruit = null;
     }
 
     void UpdateSprites()
@@ -237,7 +250,7 @@ public class Snake : MonoBehaviour
                     if (node.Next.Value.transform.position == node.Value.transform.position + Vector3.left)
                     {
                         node.Value.GetComponent<SpriteRenderer>().sprite = turn;
-                        node.Value.transform.rotation = Quaternion.Euler(0, 0, 270);
+                        node.Value.transform.rotation = Quaternion.Euler(0, 0, 90);
                     }
                     //next node is below current node
                     if (node.Next.Value.transform.position == node.Value.transform.position + Vector3.down)
@@ -253,7 +266,7 @@ public class Snake : MonoBehaviour
                     if (node.Next.Value.transform.position == node.Value.transform.position + Vector3.right)
                     {
                         node.Value.GetComponent<SpriteRenderer>().sprite = turn;
-                        node.Value.transform.rotation = Quaternion.Euler(0, 0, 90);
+                        node.Value.transform.rotation = Quaternion.Euler(0, 0, 270);
                     }
                     //next node is left of current node
                     if (node.Next.Value.transform.position == node.Value.transform.position + Vector3.left)
