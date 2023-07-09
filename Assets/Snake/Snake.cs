@@ -1,12 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using Unity.VisualScripting;
-using UnityEditor;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.Scripting.APIUpdating;
 
 public enum SnakeHeadDirection
 {
@@ -38,8 +32,8 @@ public class Snake : MonoBehaviour
     public Sprite straight;
     public Sprite turn;
 
-    [SerializeField]
-    private SnakeHeadDirection cachedDirection;
+    public GameEvent gameOverEvent;
+    public int maximumLength = 20;
 
     // Start is called before the first frame update
     void Awake()
@@ -156,6 +150,11 @@ public class Snake : MonoBehaviour
         UpdateSprites();
         //update length variable (for game over check)
         length++;
+
+        if (length > maximumLength)
+        {
+            gameOverEvent?.Raise();
+        }
     }
 
     void MoveSnake(SnakeHeadDirection direction)
@@ -176,25 +175,21 @@ public class Snake : MonoBehaviour
         switch (direction)
         {
             case SnakeHeadDirection.Up:
-                cachedDirection = SnakeHeadDirection.Up;
                 sections.First.Value.transform.position += Vector3.up;
                 //newHeadKey = keys.First.Value + 1;
                 headKey = headKey + 1;
                 break;
             case SnakeHeadDirection.Down:
-                cachedDirection = SnakeHeadDirection.Down;
                 sections.First.Value.transform.position += Vector3.down;
                 //newHeadKey = keys.First.Value - 1;
                 headKey = headKey - 1;
                 break;
             case SnakeHeadDirection.Left:
-                cachedDirection = SnakeHeadDirection.Left;
                 sections.First.Value.transform.position += Vector3.left;
                 //newHeadKey = keys.First.Value - gridHeight;
                 headKey = headKey - gridHeight;
                 break;
             case SnakeHeadDirection.Right:
-                cachedDirection = SnakeHeadDirection.Right;
                 sections.First.Value.transform.position += Vector3.right;
                 //newHeadKey = keys.First.Value + gridHeight;
                 headKey = headKey + gridHeight;
