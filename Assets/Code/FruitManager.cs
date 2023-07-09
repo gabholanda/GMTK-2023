@@ -2,6 +2,7 @@ using System.Collections;
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.Rendering.CoreUtils;
 
 public class FruitManager : MonoBehaviour
 {
@@ -13,6 +14,8 @@ public class FruitManager : MonoBehaviour
     public Dictionary<int, Vector2> emptyCells = new Dictionary<int, Vector2>();
     public List<Vector2> allCells = new List<Vector2>();
     public List<GameObject> spawnedFruits = new List<GameObject>();
+    public Snake snake;
+    public int maxFruit = 30;
 
     private void Awake()
     {
@@ -24,8 +27,11 @@ public class FruitManager : MonoBehaviour
     {
         while (true)
         {
-            SpawnFruit(fruitPrefab);
-            yield return new WaitForSeconds(spawnLength);
+            if (spawnedFruits.Count <= maxFruit)
+            {
+                SpawnFruit(fruitPrefab);
+            }
+                yield return new WaitForSeconds(spawnLength);
         }
     }
 
@@ -53,6 +59,29 @@ public class FruitManager : MonoBehaviour
             Debug.LogWarning("cells are full");
             return;
         }
+        //int headIndex = 0;
+        //if (snake.sections.First != null)
+        //{
+        //    headIndex = snake.sections.First.Value.GetComponent<Snake>().keys.First.Value;
+        //}
+        //Dictionary<int, Vector2> validEmptyCells = new Dictionary<int, Vector2>(emptyCells); 
+
+        //// Remove keys within 3 cells of the snake head in all four directions
+        //for (int x = -3; x <= 3; x++)
+        //{
+        //    for (int y = -3; y <= 3; y++)
+        //    {
+        //        int cellIndex = headIndex + x + y * snake.gridWidth;
+        //        validEmptyCells.Remove(cellIndex);
+        //    }
+        //}
+
+        //if (validEmptyCells.Count == 0)
+        //{
+        //    Debug.LogWarning("No valid empty cells available");
+        //    return;
+        //}
+
         List<int> keys = emptyCells.Keys.ToList<int>();
         int randomIndex = Random.Range(0, keys.Count);
         Vector3 randomCell = allCells[keys[randomIndex]];

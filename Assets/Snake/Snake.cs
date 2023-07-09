@@ -22,12 +22,12 @@ public class Snake : MonoBehaviour
     public int length;
     public GameObject sectionPrefab;
     public LinkedList<GameObject> sections = new LinkedList<GameObject>();
-    LinkedList<int> keys = new LinkedList<int>();
+    public LinkedList<int> keys = new LinkedList<int>();
     public FruitManager fruitScript;
     public float secondsBetweenMoves;
 
     //emptyCells stuff
-    int gridWidth;
+    public int gridWidth;
     int gridHeight;
 
     //sprites
