@@ -15,7 +15,7 @@ public class Snake : MonoBehaviour
     public Vector3 startingPosition;
     public int length;
     public GameObject sectionPrefab;
-    LinkedList<GameObject> sections = new LinkedList<GameObject>();
+    public LinkedList<GameObject> sections = new LinkedList<GameObject>();
 
     //sprites
     public Sprite head;

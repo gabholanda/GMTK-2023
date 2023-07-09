@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using static UnityEngine.Rendering.CoreUtils;
 
 public class Fruits : MonoBehaviour
 {
@@ -13,9 +15,11 @@ public class Fruits : MonoBehaviour
     [SerializeField]
     private List<Vector2> emptyCells = new List<Vector2>();
     public List<GameObject> spawnedFruits = new List<GameObject>();
+    public Snake snake;
 
     private void Awake()
     {
+       
         InitializeEmptyCells();
         StartCoroutine(SpawnFruitsCoroutine());
     }
@@ -37,6 +41,7 @@ public class Fruits : MonoBehaviour
             {
                 Vector3Int cellPosition = grid.LocalToCell(new Vector2(x, y));
                 emptyCells.Add(grid.GetCellCenterLocal(cellPosition));
+
             }
         }
     }
@@ -45,21 +50,40 @@ public class Fruits : MonoBehaviour
     {
         if (emptyCells.Count == 0)
         {
-            Debug.LogWarning("cells are full");
+            Debug.LogWarning("no free cells");
             return;
         }
 
-        int randomIndex = Random.Range(0, emptyCells.Count);
-        Vector3 randomCell = emptyCells[randomIndex];
-        emptyCells.RemoveAt(randomIndex);
+        List<Vector2> validEmptyCells = new List<   Vector2>(emptyCells);
+
+        Vector3 snakeHeadPosition = snake.sections.First.Value.transform.position;
+        validEmptyCells.RemoveAll(cell =>
+        {
+            Vector3Int cellPosition = grid.LocalToCell(cell);
+            Vector3 cellCenter = grid.GetCellCenterLocal(cellPosition);
+            float distance = Vector3.Distance(cellCenter, snakeHeadPosition);
+            return distance <= 3f;
+        });
+
+        if (validEmptyCells.Count == 0)
+        {
+            Debug.LogWarning("no free cells pt2");
+            return;
+        }
+
+        int randomIndex = Random.Range(0, validEmptyCells.Count);
+        Vector3 randomCell = validEmptyCells[randomIndex];
+
+        emptyCells.Remove(randomCell);
+
         Vector3Int cellPosition = grid.LocalToCell(randomCell);
         Vector3 spawnPosition = grid.GetCellCenterLocal(cellPosition);
-        GameObject fruit = Instantiate(fruitPrefab, spawnPosition, Quaternion.identity);
 
+        GameObject fruit = Instantiate(fruitPrefab, spawnPosition, Quaternion.identity);
         fruit.transform.SetParent(grid.transform);
+
         spawnedFruits.Add(fruit);
     }
-
     private void OnDrawGizmos()
     {
         // This only appears in the Scene tab - It is purely for debugging
