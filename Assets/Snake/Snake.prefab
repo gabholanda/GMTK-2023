@@ -45,11 +45,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d7a18d1733f8304cb9241b5c23991ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startingPosition: {x: 0, y: 0, z: 0}
   length: 3
   sectionPrefab: {fileID: 8642644853004995670, guid: 35e497fb11acc8240a958c92db88c2e5, type: 3}
   fruitScript: {fileID: 0}
   secondsBetweenMoves: 0.5
+  gridWidth: 0
   head: {fileID: 21300000, guid: e468c69e438475a4fa017810e89d8b69, type: 3}
   tail: {fileID: 21300000, guid: 2b1e05a2fbd678d459d039f3ba254280, type: 3}
   straight: {fileID: 21300000, guid: ccb48489ceb7dce44b10030b4323e0b1, type: 3}
@@ -95,7 +95,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 10
   m_Sprite: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
