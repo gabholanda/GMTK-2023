@@ -1,12 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using Unity.VisualScripting;
-using UnityEditor;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.Scripting.APIUpdating;
+
 
 public enum SnakeHeadDirection
 {
@@ -39,6 +34,9 @@ public class Snake : MonoBehaviour
     [SerializeField]
     private SnakeHeadDirection cachedDirection;
 
+    public int gameOverLength = 20;
+
+    public GameEvent gameOverEvent;
     // Start is called before the first frame update
     void Awake()
     {
@@ -87,7 +85,7 @@ public class Snake : MonoBehaviour
         int newTailKey = keys.Last.Value;
 
         //if tail is pointing to the right
-        if(sections.Last.Previous.Value.transform.position.x < sections.Last.Value.transform.position.x)
+        if (sections.Last.Previous.Value.transform.position.x < sections.Last.Value.transform.position.x)
         {
             newSectionPosition = sections.Last.Value.transform.position + Vector3.right;
             newTailKey = keys.Last.Previous.Value + gridHeight;
@@ -151,6 +149,11 @@ public class Snake : MonoBehaviour
         UpdateSprites();
         //update length variable (for game over check)
         length++;
+
+        if (length > gameOverLength)
+        {
+            gameOverEvent?.Raise();
+        }
     }
 
     void MoveSnake(SnakeHeadDirection direction)
