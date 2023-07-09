@@ -1,6 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using Unity.VisualScripting;
+using UnityEditor;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.Scripting.APIUpdating;
 
 public enum SnakeHeadDirection
 {
@@ -12,10 +18,17 @@ public enum SnakeHeadDirection
 
 public class Snake : MonoBehaviour
 {
-    public Vector3 startingPosition;
+    Vector3 startingPosition = new Vector3(0.5f, 0.5f, 0);
     public int length;
     public GameObject sectionPrefab;
-    LinkedList<GameObject> sections = new LinkedList<GameObject>();
+    public LinkedList<GameObject> sections = new LinkedList<GameObject>();
+    LinkedList<int> keys = new LinkedList<int>();
+    public FruitManager fruitScript;
+    public float secondsBetweenMoves;
+
+    //emptyCells stuff
+    int gridWidth;
+    int gridHeight;
 
     //sprites
     public Sprite head;
@@ -29,23 +42,48 @@ public class Snake : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
+        Invoke("FiveMoreMinutesMom", 0.1f);
+    }
+
+    void FiveMoreMinutesMom()
+    {
+        gridHeight = (int)Mathf.Abs(fruitScript.startingPosition.y) + (int)Mathf.Abs(fruitScript.finalPosition.y);
+        gridWidth = (int)Mathf.Abs(fruitScript.startingPosition.x) + (int)Mathf.Abs(fruitScript.finalPosition.x);
+
         //setting up initial sections
         for (int i = 0; i < length; i++)
         {
             sections.AddLast(Instantiate(sectionPrefab, startingPosition + (Vector3.left * i), Quaternion.identity));
+            int key = ((gridHeight / 2) + 1) + gridHeight * ((gridWidth / 2) - i);
+            keys.AddLast(key);
+
+            //Debug.Log(key);
         }
+
+        Debug.Log("from Snake Awake: " + fruitScript.emptyCells.Count);
+        Debug.Log("from Snake Awake: " + fruitScript.allCells.Count);
+
+        foreach (int k in keys)
+        {
+            Debug.Log(k);
+            fruitScript.emptyCells.Remove(k);
+        }
+        Debug.Log("from Snake Awake: " + fruitScript.emptyCells.Count);
+        Debug.Log("from Snake Awake: " + fruitScript.allCells.Count);
+
+        UpdateSprites();
+        StartCoroutine(TrackFruitCoroutine());
     }
 
     // Update is called once per frame
     void Update()
     {
-        UpdateSprites();
     }
 
     //add new position
     void AddSection()
     {
-
+        // TODO: whenever you add a new section, add the correct key to the keys list
         // TODO: Test this
         Vector3 newSectionPosition = sections.Last.Value.transform.position;
         if (cachedDirection == SnakeHeadDirection.Up)
@@ -75,6 +113,9 @@ public class Snake : MonoBehaviour
 
     void MoveSnake(SnakeHeadDirection direction)
     {
+        int oldTailKey = keys.Last.Value;
+        int newHeadKey = keys.First.Value;
+
         //moving all other elements
         LinkedListNode<GameObject> node = sections.Last;
         while (node != sections.First)
@@ -89,31 +130,175 @@ public class Snake : MonoBehaviour
             case SnakeHeadDirection.Up:
                 cachedDirection = SnakeHeadDirection.Up;
                 sections.First.Value.transform.position += Vector3.up;
+                newHeadKey = keys.First.Value + 1;
                 break;
             case SnakeHeadDirection.Down:
                 cachedDirection = SnakeHeadDirection.Down;
                 sections.First.Value.transform.position += Vector3.down;
+                newHeadKey = keys.First.Value - 1;
                 break;
             case SnakeHeadDirection.Left:
                 cachedDirection = SnakeHeadDirection.Left;
                 sections.First.Value.transform.position += Vector3.left;
+                newHeadKey = keys.First.Value - gridHeight;
                 break;
             case SnakeHeadDirection.Right:
                 cachedDirection = SnakeHeadDirection.Right;
                 sections.First.Value.transform.position += Vector3.right;
+                newHeadKey = keys.First.Value + gridHeight;
                 break;
         }
 
+        keys.AddFirst(newHeadKey);
+        keys.RemoveLast();
+
+
+        fruitScript.OnMoveFruit(oldTailKey, newHeadKey);
+
         UpdateSprites();
     }
-
+    IEnumerator TrackFruitCoroutine()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(secondsBetweenMoves);
+            TrackFruit();
+        }
+    }
     void TrackFruit()
     {
-        //get access to list of fruits
-        //store first fruit as closest fruit
-        //if closer fruit is found, replace closest fruit
-        //once closest fruit is found, move in a direction towards it
-        //start all over, checking if there is a closer fruit
+        //find closest fruit
+        GameObject closestFruit = null;
+        for (int i = 0; i < fruitScript.spawnedFruits.Count; i++)
+        {
+            if (closestFruit == null)
+            {
+                closestFruit = fruitScript.spawnedFruits[i];
+            }
+            else if (Vector3.Distance(sections.First.Value.transform.position, fruitScript.spawnedFruits[i].transform.position) < Vector3.Distance(sections.First.Value.transform.position, closestFruit.transform.position))
+            {
+                closestFruit = fruitScript.spawnedFruits[i];
+            }
+        }
+
+
+
+        if (closestFruit != null)
+        {
+            //move towards closest fruit
+            float yDistance = closestFruit.transform.position.y - sections.First.Value.transform.position.y;
+            float xDistance = closestFruit.transform.position.x - sections.First.Value.transform.position.x;
+
+            //if not on fruit, move
+            if (!(xDistance == 0 && yDistance == 0))
+            {
+                //if y distance == 0 -> move x
+                //if x < y -> move x
+                //if x = y -> move x
+                if ((yDistance == 0) || (Mathf.Abs(xDistance) < Mathf.Abs(yDistance)) || (Mathf.Abs(xDistance) == Mathf.Abs(yDistance)))
+                {
+                    //move in x direction
+                    if (xDistance < 0)
+                    {
+                        //check if moving back on itself
+                        if ((sections.First.Value.transform.position + Vector3.left) != sections.First.Next.Value.transform.position)
+                        {
+                            MoveSnake(SnakeHeadDirection.Left);
+                        }
+                        else
+                        {
+                            //move in y direction
+                            if (yDistance < 0)
+                            {
+                                MoveSnake(SnakeHeadDirection.Down);
+                            }
+                            else
+                            {
+                                MoveSnake(SnakeHeadDirection.Up);
+                            }
+                        }
+                    }
+                    else if (xDistance > 0)
+                    {
+                        //check if moving back on itself
+                        if ((sections.First.Value.transform.position + Vector3.right) != sections.First.Next.Value.transform.position)
+                        {
+                            MoveSnake(SnakeHeadDirection.Right);
+                        }
+                        else
+                        {
+                            //move in y direction
+                            if (yDistance < 0)
+                            {
+                                MoveSnake(SnakeHeadDirection.Down);
+                            }
+                            else
+                            {
+                                MoveSnake(SnakeHeadDirection.Up);
+                            }
+                        }
+                    }
+                }
+                //if x distance == 0 -> move y
+                //if y < x -> move y
+                if ((xDistance == 0) || (Mathf.Abs(yDistance) < Mathf.Abs(xDistance)))
+                {
+                    //move in y direction
+                    if (yDistance < 0)
+                    {
+                        //check if moving back on itself
+                        if ((sections.First.Value.transform.position + Vector3.down) != sections.First.Next.Value.transform.position)
+                        {
+                            MoveSnake(SnakeHeadDirection.Down);
+                        }
+                        else
+                        {
+                            //move in x direction
+                            if (xDistance < 0)
+                            {
+                                MoveSnake(SnakeHeadDirection.Left);
+                            }
+                            else
+                            {
+                                MoveSnake(SnakeHeadDirection.Right);
+                            }
+                        }
+                    }
+                    else if (yDistance > 0)
+                    {
+                        //check if moving back on itself
+                        if ((sections.First.Value.transform.position + Vector3.up) != sections.First.Next.Value.transform.position)
+                        {
+                            MoveSnake(SnakeHeadDirection.Up);
+                        }
+                        else
+                        {
+                            //move in x direction
+                            if (xDistance < 0)
+                            {
+                                MoveSnake(SnakeHeadDirection.Left);
+                            }
+                            else
+                            {
+                                MoveSnake(SnakeHeadDirection.Right);
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            //update distance and check if head is on fruit
+            yDistance = closestFruit.transform.position.y - sections.First.Value.transform.position.y;
+            xDistance = closestFruit.transform.position.x - sections.First.Value.transform.position.x;
+            if (xDistance == 0 && yDistance == 0)
+            {
+                AddSection();
+                fruitScript.spawnedFruits.Remove(closestFruit);
+                Destroy(closestFruit);
+            }
+        }
+        closestFruit = null;
     }
 
     void UpdateSprites()
@@ -189,7 +374,7 @@ public class Snake : MonoBehaviour
                     if (node.Next.Value.transform.position == node.Value.transform.position + Vector3.left)
                     {
                         node.Value.GetComponent<SpriteRenderer>().sprite = turn;
-                        node.Value.transform.rotation = Quaternion.Euler(0, 0, 270);
+                        node.Value.transform.rotation = Quaternion.Euler(0, 0, 90);
                     }
                     //next node is below current node
                     if (node.Next.Value.transform.position == node.Value.transform.position + Vector3.down)
@@ -205,7 +390,7 @@ public class Snake : MonoBehaviour
                     if (node.Next.Value.transform.position == node.Value.transform.position + Vector3.right)
                     {
                         node.Value.GetComponent<SpriteRenderer>().sprite = turn;
-                        node.Value.transform.rotation = Quaternion.Euler(0, 0, 90);
+                        node.Value.transform.rotation = Quaternion.Euler(0, 0, 270);
                     }
                     //next node is left of current node
                     if (node.Next.Value.transform.position == node.Value.transform.position + Vector3.left)
@@ -239,7 +424,7 @@ public class Snake : MonoBehaviour
                     if (node.Next.Value.transform.position == node.Value.transform.position + Vector3.down)
                     {
                         node.Value.GetComponent<SpriteRenderer>().sprite = turn;
-                        node.Value.transform.rotation = Quaternion.Euler(0, 0, 90);
+                        node.Value.transform.rotation = Quaternion.Euler(0, 0, 270);
                     }
                 }
                 //previous node is left of current node
@@ -255,7 +440,7 @@ public class Snake : MonoBehaviour
                     if (node.Next.Value.transform.position == node.Value.transform.position + Vector3.up)
                     {
                         node.Value.GetComponent<SpriteRenderer>().sprite = turn;
-                        node.Value.transform.rotation = Quaternion.Euler(0, 0, 270);
+                        node.Value.transform.rotation = Quaternion.Euler(0, 0, 90);
                     }
                     //next node is below current node
                     if (node.Next.Value.transform.position == node.Value.transform.position + Vector3.down)
