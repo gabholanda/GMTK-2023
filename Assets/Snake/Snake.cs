@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEditor;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.Scripting.APIUpdating;
 
 public enum SnakeHeadDirection
@@ -16,12 +18,17 @@ public enum SnakeHeadDirection
 
 public class Snake : MonoBehaviour
 {
-    public Vector3 startingPosition;
+    Vector3 startingPosition = new Vector3(0.5f, 0.5f, 0);
     public int length;
     public GameObject sectionPrefab;
     public LinkedList<GameObject> sections = new LinkedList<GameObject>();
-    public Fruits fruitScript;
+    LinkedList<int> keys = new LinkedList<int>();
+    public FruitManager fruitScript;
     public float secondsBetweenMoves;
+
+    //emptyCells stuff
+    int gridWidth;
+    int gridHeight;
 
     //sprites
     public Sprite head;
@@ -35,11 +42,35 @@ public class Snake : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
+        Invoke("FiveMoreMinutesMom", 0.1f);
+    }
+
+    void FiveMoreMinutesMom()
+    {
+        gridHeight = (int)Mathf.Abs(fruitScript.startingPosition.y) + (int)Mathf.Abs(fruitScript.finalPosition.y);
+        gridWidth = (int)Mathf.Abs(fruitScript.startingPosition.x) + (int)Mathf.Abs(fruitScript.finalPosition.x);
+
         //setting up initial sections
         for (int i = 0; i < length; i++)
         {
             sections.AddLast(Instantiate(sectionPrefab, startingPosition + (Vector3.left * i), Quaternion.identity));
+            int key = ((gridHeight / 2) + 1) + gridHeight * ((gridWidth / 2) - i);
+            keys.AddLast(key);
+
+            //Debug.Log(key);
         }
+
+        Debug.Log("from Snake Awake: " + fruitScript.emptyCells.Count);
+        Debug.Log("from Snake Awake: " + fruitScript.allCells.Count);
+
+        foreach (int k in keys)
+        {
+            Debug.Log(k);
+            fruitScript.emptyCells.Remove(k);
+        }
+        Debug.Log("from Snake Awake: " + fruitScript.emptyCells.Count);
+        Debug.Log("from Snake Awake: " + fruitScript.allCells.Count);
+
         UpdateSprites();
         StartCoroutine(TrackFruitCoroutine());
     }
@@ -52,7 +83,7 @@ public class Snake : MonoBehaviour
     //add new position
     void AddSection()
     {
-
+        // TODO: whenever you add a new section, add the correct key to the keys list
         // TODO: Test this
         Vector3 newSectionPosition = sections.Last.Value.transform.position;
         if (cachedDirection == SnakeHeadDirection.Up)
@@ -82,6 +113,9 @@ public class Snake : MonoBehaviour
 
     void MoveSnake(SnakeHeadDirection direction)
     {
+        int oldTailKey = keys.Last.Value;
+        int newHeadKey = keys.First.Value;
+
         //moving all other elements
         LinkedListNode<GameObject> node = sections.Last;
         while (node != sections.First)
@@ -96,20 +130,30 @@ public class Snake : MonoBehaviour
             case SnakeHeadDirection.Up:
                 cachedDirection = SnakeHeadDirection.Up;
                 sections.First.Value.transform.position += Vector3.up;
+                newHeadKey = keys.First.Value + 1;
                 break;
             case SnakeHeadDirection.Down:
                 cachedDirection = SnakeHeadDirection.Down;
                 sections.First.Value.transform.position += Vector3.down;
+                newHeadKey = keys.First.Value - 1;
                 break;
             case SnakeHeadDirection.Left:
                 cachedDirection = SnakeHeadDirection.Left;
                 sections.First.Value.transform.position += Vector3.left;
+                newHeadKey = keys.First.Value - gridHeight;
                 break;
             case SnakeHeadDirection.Right:
                 cachedDirection = SnakeHeadDirection.Right;
                 sections.First.Value.transform.position += Vector3.right;
+                newHeadKey = keys.First.Value + gridHeight;
                 break;
         }
+
+        keys.AddFirst(newHeadKey);
+        keys.RemoveLast();
+
+
+        fruitScript.OnMoveFruit(oldTailKey, newHeadKey);
 
         UpdateSprites();
     }
@@ -124,18 +168,16 @@ public class Snake : MonoBehaviour
     void TrackFruit()
     {
         //find closest fruit
-        GameObject closestFruit = null;// = fruitScript.spawnedFruits[0];
+        GameObject closestFruit = null;
         for (int i = 0; i < fruitScript.spawnedFruits.Count; i++)
         {
             if (closestFruit == null)
             {
                 closestFruit = fruitScript.spawnedFruits[i];
-                //Debug.Log("closest fruit at: " + closestFruit.transform.position);
             }
-            else if(Vector3.Distance(sections.First.Value.transform.position, fruitScript.spawnedFruits[i].transform.position) < Vector3.Distance(sections.First.Value.transform.position, closestFruit.transform.position))
+            else if (Vector3.Distance(sections.First.Value.transform.position, fruitScript.spawnedFruits[i].transform.position) < Vector3.Distance(sections.First.Value.transform.position, closestFruit.transform.position))
             {
                 closestFruit = fruitScript.spawnedFruits[i];
-                //Debug.Log("closest fruit at: " + closestFruit.transform.position);
             }
         }
 
@@ -159,7 +201,7 @@ public class Snake : MonoBehaviour
                     if (xDistance < 0)
                     {
                         //check if moving back on itself
-                        if((sections.First.Value.transform.position + Vector3.left) != sections.First.Next.Value.transform.position)
+                        if ((sections.First.Value.transform.position + Vector3.left) != sections.First.Next.Value.transform.position)
                         {
                             MoveSnake(SnakeHeadDirection.Left);
                         }
