@@ -150,11 +150,6 @@ public class Snake : MonoBehaviour
             //if not on fruit, move
             if (!(xDistance == 0 && yDistance == 0))
             {
-                Debug.Log("x: " + xDistance);
-                Debug.Log("y: " + yDistance);
-
-
-
                 //if y distance == 0 -> move x
                 //if x < y -> move x
                 //if x = y -> move x
@@ -163,11 +158,43 @@ public class Snake : MonoBehaviour
                     //move in x direction
                     if (xDistance < 0)
                     {
-                        MoveSnake(SnakeHeadDirection.Left);
+                        //check if moving back on itself
+                        if((sections.First.Value.transform.position + Vector3.left) != sections.First.Next.Value.transform.position)
+                        {
+                            MoveSnake(SnakeHeadDirection.Left);
+                        }
+                        else
+                        {
+                            //move in y direction
+                            if (yDistance < 0)
+                            {
+                                MoveSnake(SnakeHeadDirection.Down);
+                            }
+                            else
+                            {
+                                MoveSnake(SnakeHeadDirection.Up);
+                            }
+                        }
                     }
                     else if (xDistance > 0)
                     {
-                        MoveSnake(SnakeHeadDirection.Right);
+                        //check if moving back on itself
+                        if ((sections.First.Value.transform.position + Vector3.right) != sections.First.Next.Value.transform.position)
+                        {
+                            MoveSnake(SnakeHeadDirection.Right);
+                        }
+                        else
+                        {
+                            //move in y direction
+                            if (yDistance < 0)
+                            {
+                                MoveSnake(SnakeHeadDirection.Down);
+                            }
+                            else
+                            {
+                                MoveSnake(SnakeHeadDirection.Up);
+                            }
+                        }
                     }
                 }
                 //if x distance == 0 -> move y
@@ -177,14 +204,47 @@ public class Snake : MonoBehaviour
                     //move in y direction
                     if (yDistance < 0)
                     {
-                        MoveSnake(SnakeHeadDirection.Down);
+                        //check if moving back on itself
+                        if ((sections.First.Value.transform.position + Vector3.down) != sections.First.Next.Value.transform.position)
+                        {
+                            MoveSnake(SnakeHeadDirection.Down);
+                        }
+                        else
+                        {
+                            //move in x direction
+                            if (xDistance < 0)
+                            {
+                                MoveSnake(SnakeHeadDirection.Left);
+                            }
+                            else
+                            {
+                                MoveSnake(SnakeHeadDirection.Right);
+                            }
+                        }
                     }
                     else if (yDistance > 0)
                     {
-                        MoveSnake(SnakeHeadDirection.Up);
+                        //check if moving back on itself
+                        if ((sections.First.Value.transform.position + Vector3.up) != sections.First.Next.Value.transform.position)
+                        {
+                            MoveSnake(SnakeHeadDirection.Up);
+                        }
+                        else
+                        {
+                            //move in x direction
+                            if (xDistance < 0)
+                            {
+                                MoveSnake(SnakeHeadDirection.Left);
+                            }
+                            else
+                            {
+                                MoveSnake(SnakeHeadDirection.Right);
+                            }
+                        }
                     }
                 }
             }
+
 
             //update distance and check if head is on fruit
             yDistance = closestFruit.transform.position.y - sections.First.Value.transform.position.y;
