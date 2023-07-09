@@ -154,7 +154,7 @@ namespace SnakeGame
                                 return;
                             }
 
-                            newIdx = k - verticalIncrement;
+                            newIdx = k + verticalIncrement;
                             if (cachedColumnMin > (newIdx) / verticalSkippingConstraint)
                             {
                                 newIdx = verticalSkippingConstraint * (cachedColumnMin);
