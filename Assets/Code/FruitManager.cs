@@ -1,17 +1,17 @@
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
+using System.Collections.Generic;
 using UnityEngine;
 
-public class Fruits : MonoBehaviour
+public class FruitManager : MonoBehaviour
 {
     public Grid grid;
     public float spawnLength;
     public GameObject fruitPrefab;
     public Vector2 startingPosition;
     public Vector2 finalPosition;
-    [SerializeField]
-    private List<Vector2> emptyCells = new List<Vector2>();
+    public Dictionary<int, Vector2> emptyCells = new Dictionary<int, Vector2>();
+    public List<Vector2> allCells = new List<Vector2>();
     public List<GameObject> spawnedFruits = new List<GameObject>();
 
     private void Awake()
@@ -24,21 +24,26 @@ public class Fruits : MonoBehaviour
     {
         while (true)
         {
-            yield return new WaitForSeconds(spawnLength);
             SpawnFruit(fruitPrefab);
+            yield return new WaitForSeconds(spawnLength);
         }
     }
 
     private void InitializeEmptyCells()
     {
+        int i = 0;
         for (int x = (int)startingPosition.x; x < (int)finalPosition.x; x++)
         {
             for (int y = (int)startingPosition.y; y < (int)finalPosition.y; y++)
             {
                 Vector3Int cellPosition = grid.LocalToCell(new Vector2(x, y));
-                emptyCells.Add(grid.GetCellCenterLocal(cellPosition));
+                emptyCells.Add(i, grid.GetCellCenterLocal(cellPosition));
+                allCells.Add(grid.GetCellCenterLocal(cellPosition));
+                i++;
             }
         }
+        Debug.Log(emptyCells.Count);
+        Debug.Log(allCells.Count);
     }
 
     private void SpawnFruit(GameObject fruitPrefab)
@@ -48,24 +53,33 @@ public class Fruits : MonoBehaviour
             Debug.LogWarning("cells are full");
             return;
         }
-
-        int randomIndex = Random.Range(0, emptyCells.Count);
-        Vector3 randomCell = emptyCells[randomIndex];
-        emptyCells.RemoveAt(randomIndex);
+        List<int> keys = emptyCells.Keys.ToList<int>();
+        int randomIndex = Random.Range(0, keys.Count);
+        Vector3 randomCell = allCells[keys[randomIndex]];
+        emptyCells.Remove(keys[randomIndex]);
         Vector3Int cellPosition = grid.LocalToCell(randomCell);
         Vector3 spawnPosition = grid.GetCellCenterLocal(cellPosition);
         GameObject fruit = Instantiate(fruitPrefab, spawnPosition, Quaternion.identity);
 
         fruit.transform.SetParent(grid.transform);
+        fruit.GetComponent<SnakeGame.Draggable>().gridmap = grid;
+        fruit.GetComponent<SnakeGame.Draggable>().manager = this;
+        fruit.GetComponent<SnakeGame.Draggable>().indexInGrid = keys[randomIndex];
         spawnedFruits.Add(fruit);
+    }
+
+    public void OnMoveFruit(int previous, int current)
+    {
+        emptyCells.Remove(current);
+        emptyCells.Add(previous, allCells[previous]);
     }
 
     private void OnDrawGizmos()
     {
         // This only appears in the Scene tab - It is purely for debugging
-        for (int i = 0; i < emptyCells.Count; i++)
+        foreach (KeyValuePair<int, Vector2> kv in emptyCells)
         {
-            Gizmos.DrawCube(emptyCells[i], new Vector3(1, 1));
+            Gizmos.DrawCube(kv.Value, new Vector3(1, 1));
         }
     }
 }
