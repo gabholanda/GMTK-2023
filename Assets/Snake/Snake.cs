@@ -54,7 +54,7 @@ public class Snake : MonoBehaviour
         for (int i = 0; i < length; i++)
         {
             sections.AddLast(Instantiate(sectionPrefab, startingPosition + (Vector3.left * i), Quaternion.identity));
-            int key = ((gridHeight / 2) + 1) + gridHeight * ((gridWidth / 2) - i);
+            int key = ((gridHeight / 2)) + gridHeight * ((gridWidth / 2) - i);
             keys.AddLast(key);
 
             //Debug.Log(key);
@@ -65,7 +65,6 @@ public class Snake : MonoBehaviour
 
         foreach (int k in keys)
         {
-            Debug.Log(k);
             fruitScript.emptyCells.Remove(k);
         }
         Debug.Log("from Snake Awake: " + fruitScript.emptyCells.Count);
@@ -83,27 +82,70 @@ public class Snake : MonoBehaviour
     //add new position
     void AddSection()
     {
-        // TODO: whenever you add a new section, add the correct key to the keys list
+
+        Vector3 newSectionPosition = new Vector3();
+        int newTailKey = keys.Last.Value;
+
+        //if tail is pointing to the right
+        if(sections.Last.Previous.Value.transform.position.x < sections.Last.Value.transform.position.x)
+        {
+            newSectionPosition = sections.Last.Value.transform.position + Vector3.right;
+            newTailKey = keys.Last.Previous.Value + gridHeight;
+            //keys.AddLast(keys.Last.Previous.Value + gridHeight);
+        }
+        //if tail is pointing to the left
+        if (sections.Last.Previous.Value.transform.position.x > sections.Last.Value.transform.position.x)
+        {
+            newSectionPosition = sections.Last.Value.transform.position + Vector3.left;
+            newTailKey = keys.Last.Previous.Value - gridHeight;
+            //keys.AddLast(keys.Last.Previous.Value - gridHeight);
+        }
+        //if tail is pointing down
+        if (sections.Last.Previous.Value.transform.position.y < sections.Last.Value.transform.position.y)
+        {
+            newSectionPosition = sections.Last.Value.transform.position + Vector3.down;
+            newTailKey = keys.Last.Previous.Value - 1;
+            //keys.AddLast(keys.Last.Previous.Value - 1);
+        }
+        //if tail is pointing up
+        if (sections.Last.Previous.Value.transform.position.y > sections.Last.Value.transform.position.y)
+        {
+            newSectionPosition = sections.Last.Value.transform.position + Vector3.up;
+            newTailKey = keys.Last.Previous.Value + 1;
+            //keys.AddLast(keys.Last.Previous.Value + 1);
+        }
+
+        sections.AddLast(Instantiate(sectionPrefab, newSectionPosition, Quaternion.identity));
+        //keys.AddLast(newTailKey);
+        //fruitScript.emptyCells.Remove(newTailKey);
+
+
+
+
         // TODO: Test this
-        Vector3 newSectionPosition = sections.Last.Value.transform.position;
-        if (cachedDirection == SnakeHeadDirection.Up)
-        {
-            newSectionPosition.y += 1;
-        }
-        else if (cachedDirection == SnakeHeadDirection.Down)
-        {
-            newSectionPosition.y -= 1;
-        }
-        else if (cachedDirection == SnakeHeadDirection.Left)
-        {
-            newSectionPosition.x -= 1;
-        }
-        else
-        {
-            newSectionPosition.x += 1;
-        }
-        // We are adding to the head here, so I am pushing it one tile ahead and updating sprites, so player wont see anything funny happening
-        sections.AddBefore(sections.Last, Instantiate(sectionPrefab, newSectionPosition, Quaternion.identity));
+        //Vector3 newSectionPosition = sections.First.Value.transform.position;
+        //if (cachedDirection == SnakeHeadDirection.Up)
+        //{
+        //    newSectionPosition.y += 1;
+        //}
+        //else if (cachedDirection == SnakeHeadDirection.Down)
+        //{
+        //    newSectionPosition.y -= 1;
+        //}
+        //else if (cachedDirection == SnakeHeadDirection.Left)
+        //{
+        //    newSectionPosition.x -= 1;
+        //}
+        //else
+        //{
+        //    newSectionPosition.x += 1;
+        //}
+
+        //// We are adding to the head here, so I am pushing it one tile ahead and updating sprites, so player wont see anything funny happening
+        //sections.AddBefore(sections.First, Instantiate(sectionPrefab, newSectionPosition, Quaternion.identity));
+
+
+
 
         // Update sprites is doing all the work of setting the right sprite and its necessary rotation, thanks Sabrina.
         UpdateSprites();
