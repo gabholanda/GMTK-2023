@@ -191,6 +191,7 @@ public class Snake : MonoBehaviour
             xDistance = closestFruit.transform.position.x - sections.First.Value.transform.position.x;
             if (xDistance == 0 && yDistance == 0)
             {
+                AddSection();
                 fruitScript.spawnedFruits.Remove(closestFruit);
                 Destroy(closestFruit);
             }
