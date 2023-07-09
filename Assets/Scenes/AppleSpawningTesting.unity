@@ -273,12 +273,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   grid: {fileID: 1162363428}
-  spawnLength: 10
+  spawnLength: 0.1
   fruitPrefab: {fileID: 8104697826381568163, guid: 325ce747730a00c4f950e59834f1e80a, type: 3}
   startingPosition: {x: -10, y: -4}
   finalPosition: {x: 10, y: 4}
   allCells: []
   spawnedFruits: []
+  snake: {fileID: 953326824}
 --- !u!4 &568741666
 Transform:
   m_ObjectHideFlags: 0
@@ -294,6 +295,17 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &953326824 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 510467086068063638, guid: 5041dacf0b44dcf4d8113690dcb3518f, type: 3}
+  m_PrefabInstance: {fileID: 1878179456}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8d7a18d1733f8304cb9241b5c23991ab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1162363427
 GameObject:
   m_ObjectHideFlags: 0
@@ -457,3 +469,72 @@ MonoBehaviour:
   m_RequiresDepthTexture: 0
   m_RequiresColorTexture: 0
   m_Version: 2
+--- !u!1001 &1878179456
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 510467086068063592, guid: 5041dacf0b44dcf4d8113690dcb3518f, type: 3}
+      propertyPath: m_Name
+      value: Snake
+      objectReference: {fileID: 0}
+    - target: {fileID: 510467086068063637, guid: 5041dacf0b44dcf4d8113690dcb3518f, type: 3}
+      propertyPath: m_RootOrder
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 510467086068063637, guid: 5041dacf0b44dcf4d8113690dcb3518f, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.3506335
+      objectReference: {fileID: 0}
+    - target: {fileID: 510467086068063637, guid: 5041dacf0b44dcf4d8113690dcb3518f, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.061103366
+      objectReference: {fileID: 0}
+    - target: {fileID: 510467086068063637, guid: 5041dacf0b44dcf4d8113690dcb3518f, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.027943864
+      objectReference: {fileID: 0}
+    - target: {fileID: 510467086068063637, guid: 5041dacf0b44dcf4d8113690dcb3518f, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 510467086068063637, guid: 5041dacf0b44dcf4d8113690dcb3518f, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 510467086068063637, guid: 5041dacf0b44dcf4d8113690dcb3518f, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 510467086068063637, guid: 5041dacf0b44dcf4d8113690dcb3518f, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 510467086068063637, guid: 5041dacf0b44dcf4d8113690dcb3518f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 510467086068063637, guid: 5041dacf0b44dcf4d8113690dcb3518f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 510467086068063637, guid: 5041dacf0b44dcf4d8113690dcb3518f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 510467086068063638, guid: 5041dacf0b44dcf4d8113690dcb3518f, type: 3}
+      propertyPath: fruitScript
+      value: 
+      objectReference: {fileID: 568741665}
+    - target: {fileID: 510467086068063638, guid: 5041dacf0b44dcf4d8113690dcb3518f, type: 3}
+      propertyPath: startingPosition.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 510467086068063638, guid: 5041dacf0b44dcf4d8113690dcb3518f, type: 3}
+      propertyPath: startingPosition.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 5041dacf0b44dcf4d8113690dcb3518f, type: 3}
