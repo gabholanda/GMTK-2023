@@ -22,7 +22,8 @@ public class Snake : MonoBehaviour
     public int length;
     public GameObject sectionPrefab;
     public LinkedList<GameObject> sections = new LinkedList<GameObject>();
-    LinkedList<int> keys = new LinkedList<int>();
+    int headKey;
+    //LinkedList<int> keys = new LinkedList<int>();
     public FruitManager fruitScript;
     public float secondsBetweenMoves;
 
@@ -54,21 +55,24 @@ public class Snake : MonoBehaviour
         for (int i = 0; i < length; i++)
         {
             sections.AddLast(Instantiate(sectionPrefab, startingPosition + (Vector3.left * i), Quaternion.identity));
-            int key = ((gridHeight / 2)) + gridHeight * ((gridWidth / 2) - i);
-            keys.AddLast(key);
+            //int key = ((gridHeight / 2)) + gridHeight * ((gridWidth / 2) - i);
+            //keys.AddLast(key);
 
             //Debug.Log(key);
         }
 
-        Debug.Log("from Snake Awake: " + fruitScript.emptyCells.Count);
-        Debug.Log("from Snake Awake: " + fruitScript.allCells.Count);
+        //setting head key
+        headKey = ((gridHeight / 2)) + gridHeight * ((gridWidth / 2));
+        fruitScript.emptyCells.Remove(headKey);
+        Debug.Log("headkey in awake: " + headKey);
 
-        foreach (int k in keys)
-        {
-            fruitScript.emptyCells.Remove(k);
-        }
-        Debug.Log("from Snake Awake: " + fruitScript.emptyCells.Count);
-        Debug.Log("from Snake Awake: " + fruitScript.allCells.Count);
+
+        //foreach (int k in keys)
+        //{
+        //    fruitScript.emptyCells.Remove(k);
+        //}
+        //Debug.Log("from Snake Awake: " + fruitScript.emptyCells.Count);
+        //Debug.Log("from Snake Awake: " + fruitScript.allCells.Count);
 
         UpdateSprites();
         StartCoroutine(TrackFruitCoroutine());
@@ -84,34 +88,34 @@ public class Snake : MonoBehaviour
     {
 
         Vector3 newSectionPosition = new Vector3();
-        int newTailKey = keys.Last.Value;
+        //int newTailKey = keys.Last.Value;
 
         //if tail is pointing to the right
         if(sections.Last.Previous.Value.transform.position.x < sections.Last.Value.transform.position.x)
         {
             newSectionPosition = sections.Last.Value.transform.position + Vector3.right;
-            newTailKey = keys.Last.Previous.Value + gridHeight;
+            //newTailKey = keys.Last.Previous.Value + gridHeight;
             //keys.AddLast(keys.Last.Previous.Value + gridHeight);
         }
         //if tail is pointing to the left
         if (sections.Last.Previous.Value.transform.position.x > sections.Last.Value.transform.position.x)
         {
             newSectionPosition = sections.Last.Value.transform.position + Vector3.left;
-            newTailKey = keys.Last.Previous.Value - gridHeight;
+            //newTailKey = keys.Last.Previous.Value - gridHeight;
             //keys.AddLast(keys.Last.Previous.Value - gridHeight);
         }
         //if tail is pointing down
-        if (sections.Last.Previous.Value.transform.position.y < sections.Last.Value.transform.position.y)
+        if (sections.Last.Previous.Value.transform.position.y > sections.Last.Value.transform.position.y)
         {
             newSectionPosition = sections.Last.Value.transform.position + Vector3.down;
-            newTailKey = keys.Last.Previous.Value - 1;
+            //newTailKey = keys.Last.Previous.Value - 1;
             //keys.AddLast(keys.Last.Previous.Value - 1);
         }
         //if tail is pointing up
-        if (sections.Last.Previous.Value.transform.position.y > sections.Last.Value.transform.position.y)
+        if (sections.Last.Previous.Value.transform.position.y < sections.Last.Value.transform.position.y)
         {
             newSectionPosition = sections.Last.Value.transform.position + Vector3.up;
-            newTailKey = keys.Last.Previous.Value + 1;
+            //newTailKey = keys.Last.Previous.Value + 1;
             //keys.AddLast(keys.Last.Previous.Value + 1);
         }
 
@@ -155,8 +159,9 @@ public class Snake : MonoBehaviour
 
     void MoveSnake(SnakeHeadDirection direction)
     {
-        int oldTailKey = keys.Last.Value;
-        int newHeadKey = keys.First.Value;
+        //int oldTailKey = keys.First.Value;
+        //int newHeadKey = keys.First.Value;
+        int oldHeadKey = headKey;
 
         //moving all other elements
         LinkedListNode<GameObject> node = sections.Last;
@@ -172,30 +177,33 @@ public class Snake : MonoBehaviour
             case SnakeHeadDirection.Up:
                 cachedDirection = SnakeHeadDirection.Up;
                 sections.First.Value.transform.position += Vector3.up;
-                newHeadKey = keys.First.Value + 1;
+                //newHeadKey = keys.First.Value + 1;
+                headKey = headKey + 1;
                 break;
             case SnakeHeadDirection.Down:
                 cachedDirection = SnakeHeadDirection.Down;
                 sections.First.Value.transform.position += Vector3.down;
-                newHeadKey = keys.First.Value - 1;
+                //newHeadKey = keys.First.Value - 1;
+                headKey = headKey - 1;
                 break;
             case SnakeHeadDirection.Left:
                 cachedDirection = SnakeHeadDirection.Left;
                 sections.First.Value.transform.position += Vector3.left;
-                newHeadKey = keys.First.Value - gridHeight;
+                //newHeadKey = keys.First.Value - gridHeight;
+                headKey = headKey - gridHeight;
                 break;
             case SnakeHeadDirection.Right:
                 cachedDirection = SnakeHeadDirection.Right;
                 sections.First.Value.transform.position += Vector3.right;
-                newHeadKey = keys.First.Value + gridHeight;
+                //newHeadKey = keys.First.Value + gridHeight;
+                headKey = headKey + gridHeight;
                 break;
         }
 
-        keys.AddFirst(newHeadKey);
-        keys.RemoveLast();
-
-
-        fruitScript.OnMoveFruit(oldTailKey, newHeadKey);
+        //keys.AddFirst(newHeadKey);
+        //keys.RemoveLast();
+        //fruitScript.OnMoveFruit(oldTailKey, newHeadKey);
+        fruitScript.OnMoveFruit(oldHeadKey, headKey);
 
         UpdateSprites();
     }
